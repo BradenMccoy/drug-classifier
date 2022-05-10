@@ -1,2 +1,2 @@
 # drug-classifer
-On a quest to find the very best drugs
+This project will use two different datasets and attempt to associate personal traits (i.e. name, gender, personality type), and the drug used.
