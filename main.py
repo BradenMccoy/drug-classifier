@@ -19,12 +19,12 @@ def main():
         drugs.append([str(data.values[i, j]) for j in range(0, 24)])
     print(drugs[0])
 
-    rules = apriori(drugs, min_support = 0.05, min_confidence = 0.2, min_lift = 3, min_length = 2)
+    rules = apriori(drugs, min_support = 0.05, min_confidence = 0.2, min_lift = 3, min_length = 2, use_colnames = True)
 
     results = list(rules)
 
-    results = pd.DataFrame(results)
-    print(results)
+    #results = pd.DataFrame(results)
+    print(results[0])
 
 if __name__ == "__main__":
     main()
