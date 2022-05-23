@@ -8,6 +8,7 @@ from sklearn.tree import export_graphviz
 from sklearn.externals.six import StringIO  
 from IPython.display import Image  
 import pydotplus
+from sklearn.tree import _tree
 
 def main():
     train = pd.read_csv('drug_consumption.data', header=None)
@@ -15,19 +16,22 @@ def main():
                     'Impulsive', 'SS', 'Alcohol', 'Amphet', 'Amyl', 'Benzos', 'Caff', 'Cannabis', 'Choc', 'Coke', 'Crack', 'Ecstasy',
                     'Heroin', 'Ketamine', 'Legalh', 'LSD', 'Meth', 'Mushrooms', 'Nicotine', 'Semer', 'VSA']
 
+    # empty for now
     feature_cols = ['Age', 'Gender', 'Education', 'Country', 'Ethnicity', 'Nscore', 'Escore', 'Oscore', 'Ascore', 'Cscore',
-                    'Impulsive']
-
+                    'Impulsive'] 
+    
     # y is the output, the class we want to predict, and x contains the other columns of the dataset
-    y = train.Cannabis
+    legal_drugs = ['Alcohol', 'Caff', 'Cannabis', 'Choc', 'Legalh', 'Nicotine', 'Mushrooms']
+    drugname = 'Alcohol' # iterate over legal drugs
+
+    y = train[drugname]
     X = train[feature_cols] # only include the columns that we want
 
     # Now we split the dataset in train and test sets
-    # initial values are train set is 75% and test set is 25%
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=2)   
 
     # Use the function imported above and apply fit() on it
-    DT = DecisionTreeClassifier()
+    DT = DecisionTreeClassifier(criterion="entropy", max_depth=4) # depth is 
     DT.fit(X_train,y_train)
 
     # We use the predict() on the model to predict the output
@@ -37,13 +41,40 @@ def main():
     print(accuracy_score(y_test,pred))
     print(f1_score(y_test,pred,average='micro'))
 
+    # png(DT, feature_cols, "depth5-alc.png")
+    # tree_to_code(DT, feature_cols)
+
+def png(DT, feature_cols, file_name):
     dot_data = StringIO()
     export_graphviz(DT, out_file=dot_data,  
                     filled=True, rounded=True,
-                    special_characters=True,feature_names = feature_cols,class_names=['CL0', 'CL1', 'CL2', 'CL3', 'CL4', 'CL5', 'CL6'])
+                    special_characters=True,feature_names = feature_cols,class_names=['Never Used', 'Used a Decade Ago', 'Used in Last Decade', 
+                    'Used in Last Year', 'Used in Last Month', 'Used in Last Week', 'Used in Last Day'])
     graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
-    graph.write_png('decisiontree.png')
+    graph.write_png(file_name)
     Image(graph.create_png())
+
+def tree_to_code(tree, feature_names):
+    tree_ = tree.tree_
+    feature_name = [
+        feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
+        for i in tree_.feature
+    ]
+    print "def tree({}):".format(", ".join(feature_names))
+
+    def recurse(node, depth):
+        indent = "  " * depth
+        if tree_.feature[node] != _tree.TREE_UNDEFINED:
+            name = feature_name[node]
+            threshold = tree_.threshold[node]
+            print "{}if {} <= {}:".format(indent, name, threshold)
+            recurse(tree_.children_left[node], depth + 1)
+            print "{}else:  # if {} > {}".format(indent, name, threshold)
+            recurse(tree_.children_right[node], depth + 1)
+        else:
+            print "{}return {}".format(indent, tree_.value[node])
+
+    recurse(0, 1)
 
 
 if __name__ == "__main__":
