@@ -17,10 +17,11 @@ def main():
                     'Impulsive', 'SS', 'Alcohol', 'Amphet', 'Amyl', 'Benzos', 'Caff', 'Cannabis', 'Choc', 'Coke', 'Crack', 'Ecstasy',
                     'Heroin', 'Ketamine', 'Legalh', 'LSD', 'Meth', 'Mushrooms', 'Nicotine', 'Semer', 'VSA']
 
-    # empty for now
+    # columns we are interested in
     feature_cols = ['Age', 'Gender', 'Education', 'Country', 'Ethnicity', 'Nscore', 'Escore', 'Oscore', 'Ascore', 'Cscore',
                     'Impulsive']
-    combo_list = []
+
+    combo_list = [] # contains all possible combinations
     combo_list.append(feature_cols[:1])
     combo_list.append(feature_cols[:2])
     combo_list.append(feature_cols[:3])
@@ -33,18 +34,25 @@ def main():
     combo_list.append(feature_cols[:10]) 
     combo_list.append(feature_cols)
     
-    print(combo_list)
+    # print(combo_list)
     
     # y is the output, the class we want to predict, and x contains the other columns of the dataset
     legal_drugs = ['Alcohol', 'Caff', 'Cannabis', 'Choc', 'Legalh', 'Nicotine', 'Mushrooms']
     illegal_drugs = ['SS', 'Amphet', 'Amyl', 'Benzos', 'Coke', 'Crack', 'Ecstasy',
                      'Heroin', 'Ketamine', 'LSD', 'Meth', 'Mushrooms', 'Semer', 'VSA']
     
+    # change to a binary classification, used or never used
+    for drug in legal_drugs:
+        train[drug] = train[drug].apply(mod_classification)
+    
     print("------ Beginning Training sequence ------")
     outfile = open("output.txt", "w")
     for drug in legal_drugs:
         y = train[drug]
         outfile.write("Predicting for " + drug + ":\n")
+        
+        # track the maximum accuracy rule for each drug
+        max_accuracy = 0
         for combo in combo_list:
             X = train[list(combo)]
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=2)
@@ -52,11 +60,16 @@ def main():
             DT.fit(X_train,y_train)
             pred=DT.predict(X_test)
             outfile.write("\tUsing feature columns: ")
+            
             for item in list(combo):
                 outfile.write(item + " ")
-            outfile.write("Accuracy: ")
-            outfile.write(str(accuracy_score(y_test, pred)))
-            outfile.write("\n")
+            outfile.write("Accuracy: " + str(accuracy_score(y_test, pred)) + "\n")
+
+            # check if this is a maximum accuracy
+            if(accuracy_score(y_test, pred) > max_accuracy):
+                max_accuracy = accuracy_score(y_test, pred)
+
+        outfile.write("Maximum accuracy: " + str(max_accuracy) + "\n\n")
     
     outfile.close()
 
@@ -79,6 +92,12 @@ def main():
 
     # png(DT, feature_cols, "depth5-alc.png")
     # tree_to_code(DT, feature_cols)
+
+def mod_classification(x):
+    if (x == 'CL0'):
+        return 'Never Used'
+    else:
+        return 'Used' 
 
 def png(DT, feature_cols, file_name):
     dot_data = StringIO()
