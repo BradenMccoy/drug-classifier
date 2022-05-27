@@ -32,6 +32,8 @@ def main():
         train[drug] = train[drug].apply(mod_classification)
     for drug in illegal_drugs:
         train[drug] = train[drug].apply(mod_classification)
+
+    train['Ethnicity'] = train['Ethnicity'].apply(mod_ethnicity)
     
     combo_list = generate_combo_list(feature_cols) #all possible combinations of feature columns
 
@@ -61,7 +63,7 @@ def generate_tree(drug_list, feature_columns, combo_list, filename, train):
         # track the maximum accuracy rule for each drug
         max_accuracy = 0
         max_feature_list = []
-        max_DT = DecisionTreeClassifier(criterion="entropy", max_depth=6) # depth is 4
+        max_DT = DecisionTreeClassifier(criterion="entropy") # depth is 4
         
         # go through all possible attribute lists
         for combo in combo_list:
@@ -113,7 +115,33 @@ def mod_classification(x):
     if (x == 'CL0'):
         return 'Never Used'
     else:
-        return 'Used' 
+        return 'Used'
+
+def mod_ethnicity(x):
+    if x == -.50212:
+        # asian
+        return 1
+    if x == 1.90725:
+        # mixed-black/asian
+        return 2
+    if x == 0.12600:
+        # mixed-white/asian
+        return 3
+    if x == -0.22166:
+        # mixed-white/black
+        return 4
+    if x == -1.10702:
+        # black
+        return 5
+    if x == -0.31685:
+        # white
+        return 6
+    if x == 0.11440:
+        # other
+        return 7
+    else:
+        return x
+
 
 def png(DT, feature_cols, file_name):
     dot_data = StringIO()
