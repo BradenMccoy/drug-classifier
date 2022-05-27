@@ -10,7 +10,7 @@ from IPython.display import Image
 import pydotplus
 from sklearn.tree import _tree
 from itertools import combinations
-
+import os
 
 def main():
     train = pd.read_csv('drug_consumption.data', header=None)
@@ -23,9 +23,9 @@ def main():
                     'Impulsive']
     
     # y is the output, the class we want to predict, and x contains the other columns of the dataset
-    legal_drugs = ['Alcohol', 'Caff', 'Cannabis', 'Choc', 'Legalh', 'Nicotine', 'Mushrooms']
-    illegal_drugs = ['SS', 'Amphet', 'Amyl', 'Benzos', 'Coke', 'Crack', 'Ecstasy',
-                     'Heroin', 'Ketamine', 'LSD', 'Meth', 'Mushrooms', 'Semer', 'VSA']
+    legal_drugs = ['Alcohol', 'Caff', 'Cannabis', 'Choc', 'Legalh', 'Nicotine']
+    illegal_drugs = ['Amphet', 'Amyl', 'Benzos', 'Coke', 'Crack', 'Ecstasy',
+                     'Heroin', 'Ketamine', 'LSD', 'Meth', 'Mushrooms', 'Semer', 'SS', 'VSA']
     
     # change to a binary classification, used or never used
     for drug in legal_drugs:
@@ -37,15 +37,22 @@ def main():
 
     # get file for legal drugs accuracy stats and rules
     generate_tree(legal_drugs, feature_cols, combo_list, "legal", train)
-
+    print("\n")
     # ditto for illegal drugs
     generate_tree(illegal_drugs, feature_cols, combo_list, "illegal", train)
 
 # given a list of drugs and feature_columns, generate the trees for the possible
 # permutations of rules and find the highest accuracy score
 def generate_tree(drug_list, feature_columns, combo_list, filename, train):
-    print("------ Beginning Training sequence ------")
+    print("\033[4m" + filename + " drugs:\033[0m")
+    
     outfile = open(filename + ".txt", "w")
+
+    # make directories for the pngs
+    path = "./" + filename + "-pngs"
+    if False == os.path.isdir(path):
+        os.mkdir(path)
+
     for drug in drug_list:
         y = train[drug]
 
@@ -54,7 +61,7 @@ def generate_tree(drug_list, feature_columns, combo_list, filename, train):
         # track the maximum accuracy rule for each drug
         max_accuracy = 0
         max_feature_list = []
-        max_DT = DecisionTreeClassifier(criterion="entropy", max_depth=4) # depth is 4
+        max_DT = DecisionTreeClassifier(criterion="entropy", max_depth=6) # depth is 4
         
         # go through all possible attribute lists
         for combo in combo_list:
@@ -64,7 +71,7 @@ def generate_tree(drug_list, feature_columns, combo_list, filename, train):
             DT = DecisionTreeClassifier(criterion="entropy", max_depth=4) # depth is 4
             DT.fit(X_train,y_train)
             pred=DT.predict(X_test)
-            
+
             outfile.write("\tUsing feature columns: ")
             
             for item in list(combo):
@@ -77,12 +84,12 @@ def generate_tree(drug_list, feature_columns, combo_list, filename, train):
                 max_feature_list = combo
                 max_DT = DT
 
-        outfile.write("Maximum accuracy: " + str(max_accuracy) + "\n\n")
+        outfile.write("Maximum accuracy: " + str(max_accuracy) + "\n")
+        outfile.write("Maximum accuracy attributes: " + str(max_feature_list) + "\n\n")
+        print(drug + " maximum accuracy: " + "{:.2f}".format(max_accuracy))
         
         # create a png for the maximum accuracy rule
-        pngname = "depth4-" + drug + ".png"
-        print(pngname)
-        print(max_feature_list)
+        pngname = path + "/" + drug + "-" + "{:.2f}".format(max_accuracy) + ".png"
         png(max_DT, max_feature_list, pngname)
     
     outfile.close()
