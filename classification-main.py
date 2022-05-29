@@ -52,7 +52,7 @@ def edit_elems(train, legal_drugs, illegal_drugs):
     train['Education'] = train['Education'].apply(mod_educ)
     train['Country'] = train['Country'].apply(mod_country)
     train['Age'] = train['Age'].apply(mod_age)
-    print(train['Age'])
+    # print(train['Age'])
     return train # return the modified training set
 
 # alter the age elements to be 1 - 6
