@@ -11,6 +11,7 @@ import pydotplus
 from sklearn.tree import _tree
 from itertools import combinations
 import os
+import numpy
 
 def main():
     train = pd.read_csv('drug_consumption.data', header=None)
@@ -27,13 +28,8 @@ def main():
     illegal_drugs = ['Amphet', 'Amyl', 'Benzos', 'Coke', 'Crack', 'Ecstasy',
                      'Heroin', 'Ketamine', 'LSD', 'Meth', 'Mushrooms', 'Semer', 'SS', 'VSA']
     
-    # change to a binary classification, used or never used
-    for drug in legal_drugs:
-        train[drug] = train[drug].apply(mod_classification)
-    for drug in illegal_drugs:
-        train[drug] = train[drug].apply(mod_classification)
-
-    train['Ethnicity'] = train['Ethnicity'].apply(mod_ethnicity)
+    # edit the elements in the dataset to be more readable
+    train = edit_elems(train, legal_drugs, illegal_drugs)
     
     combo_list = generate_combo_list(feature_cols) #all possible combinations of feature columns
 
@@ -42,6 +38,70 @@ def main():
     print("\n")
     # ditto for illegal drugs
     generate_tree(illegal_drugs, feature_cols, combo_list, "illegal", train)
+
+# edit the elements in the columns to make them more readable
+def edit_elems(train, legal_drugs, illegal_drugs):
+    # change to a binary classification, used or never used
+    for drug in legal_drugs:
+        train[drug] = train[drug].apply(mod_classification)
+    for drug in illegal_drugs:
+        train[drug] = train[drug].apply(mod_classification)
+
+    train['Ethnicity'] = train['Ethnicity'].apply(mod_ethnicity)
+    train['Gender'] = train['Gender'].apply(mod_gend)
+    train['Education'] = train['Education'].apply(mod_educ)
+    
+    return train # return the modified training set
+
+# alter the education elements to be 1 - 8
+# 0 = left school before 16 years
+# 1 = left school at 16 years
+# 2 = left school at 17 years
+# 3 = left school at 18 years
+# 4 = some college or university, no certificate or degree
+# 5 = professional certificate/diploma
+# 6 = university degree
+# 7 = masters degree
+# 8 = doctorate degree
+def mod_educ(x):
+    if numpy.isclose(x,-2.43591):
+        # left school before 16 years
+        return 0
+    if numpy.isclose(x,-1.73790):
+        # left school at 16 years
+        return 1
+    if numpy.isclose(x,-1.43719):
+        # left school at 17 years
+        return 2
+    if numpy.isclose(x,-1.22751):
+        # left school at 18 years
+        return 3
+    if numpy.isclose(x,-0.61113):
+        # some college or university, no certificate or degree
+        return 4
+    if numpy.isclose(x,-0.05921):
+        # professional certificate/diploma
+        return 5
+    if numpy.isclose(x,0.45468):
+        # university degree
+        return 6
+    if numpy.isclose(x,1.16365):
+        # masters degree
+        return 7
+    if numpy.isclose(x,1.98437):
+        # doctorate degree
+        return 8
+    else:
+        return x
+
+# alter the gender elements to be 1 and 2
+# 1 = male
+# 2 = female
+def mod_gend(x):
+    if numpy.isclose(x,0.48246): 
+        return 1
+    else:
+        return 2
 
 # given a list of drugs and feature_columns, generate the trees for the possible
 # permutations of rules and find the highest accuracy score
@@ -112,31 +172,39 @@ def generate_combo_list(feature_cols):
     return combo_list
 
 def mod_classification(x):
-    if (x == 'CL0'):
+    if x == 'CL0':
         return 'Never Used'
     else:
         return 'Used'
 
+# modify the ethnicity elements to be 1 - 7
+# 1 = asian
+# 2 = mixed-black/asian
+# 3 = mixed-white/asian
+# 4 = mixed-white/black
+# 5 = black
+# 6 = white
+# 7 = other
 def mod_ethnicity(x):
-    if x == -.50212:
+    if numpy.isclose(x,-.50212):
         # asian
         return 1
-    if x == 1.90725:
+    if numpy.isclose(x,1.90725):
         # mixed-black/asian
         return 2
-    if x == 0.12600:
+    if numpy.isclose(x,0.12600):
         # mixed-white/asian
         return 3
-    if x == -0.22166:
+    if numpy.isclose(x,-0.22166):
         # mixed-white/black
         return 4
-    if x == -1.10702:
+    if numpy.isclose(x,-1.10702):
         # black
         return 5
-    if x == -0.31685:
+    if numpy.isclose(x,-0.31685):
         # white
         return 6
-    if x == 0.11440:
+    if numpy.isclose(x,0.11440):
         # other
         return 7
     else:
