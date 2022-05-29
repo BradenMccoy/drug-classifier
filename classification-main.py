@@ -50,8 +50,55 @@ def edit_elems(train, legal_drugs, illegal_drugs):
     train['Ethnicity'] = train['Ethnicity'].apply(mod_ethnicity)
     train['Gender'] = train['Gender'].apply(mod_gend)
     train['Education'] = train['Education'].apply(mod_educ)
-    
+    train['Country'] = train['Country'].apply(mod_country)
+    train['Age'] = train['Age'].apply(mod_age)
+    print(train['Age'])
     return train # return the modified training set
+
+# alter the age elements to be 1 - 6
+# 1 = 18-24
+# 2 = 25-34
+# 3 = 35-44
+# 4 = 45-54
+# 5 = 55-64
+# 6 = 65+
+def mod_age(x):
+    if numpy.isclose(x,-0.95197): # 18-24 
+        return 1
+    if numpy.isclose(x, -0.07854): # 25-34 
+        return 2
+    if numpy.isclose(x,0.49788): # 35-44 
+        return 3
+    if numpy.isclose(x,1.09449): # 45-54 
+        return 4
+    if numpy.isclose(x,1.82213): # 55-64
+        return 5
+    if numpy.isclose(x,2.59171): # 65+
+        return 6
+
+# alter the country elements to be 1 - 7
+# 1 = australia
+# 2 = canada
+# 3 = new zealand
+# 4 = republic of ireland
+# 5 = UK
+# 6 = USA
+# 7 = other
+def mod_country(x):
+    if numpy.isclose(x,-0.09765): # Australia 
+        return 1
+    if numpy.isclose(x,0.24923): # Canada 
+        return 2
+    if numpy.isclose(x,-0.46841): # New Zealand 
+        return 3
+    if numpy.isclose(x,0.21128): # Republic of Ireland 20 1.06%
+        return 4
+    if numpy.isclose(x,0.96082): # UK 
+        return 5
+    if numpy.isclose(x,-0.57009): # USA 
+        return 6
+    if numpy.isclose(x,-0.28519): # Other 
+        return 7
 
 # alter the education elements to be 1 - 8
 # 0 = left school before 16 years

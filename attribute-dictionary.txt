@@ -1,0 +1,40 @@
+Age:
+1 = 18-24
+2 = 25-34
+3 = 35-44
+4 = 45-54
+5 = 55-64
+6 = 65+
+
+Ethnicity: 
+1 = asian
+2 = mixed-black/asian
+3 = mixed-white/asian
+4 = mixed-white/black
+5 = black
+6 = white
+7 = other
+
+Education:
+0 = left school before 16 years
+1 = left school at 16 years
+2 = left school at 17 years
+3 = left school at 18 years
+4 = some college or university, no certificate or degree
+5 = professional certificate/diploma
+6 = university degree
+7 = masters degree
+8 = doctorate degree
+
+Gender:
+1 = male
+2 = female
+
+Country:
+1 = australia
+2 = canada
+3 = new zealand
+4 = republic of ireland
+5 = UK
+6 = USA
+7 = other
